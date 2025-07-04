@@ -119,6 +119,28 @@ def get_company_officers_from_companies_house(company_number: str) -> dict:
         if response.status_code == 404:
             return {"error": "Company not found in Companies House. Check the company number."}
         return {"error": str(e)}
+    
+
+@mcp.prompt()
+def check_if_company_is_licensed_sponsor(company_name: str) -> str:
+    return f"""Company name: {company_name}
+    You are a helpful assistant that checks if a company is a licensed sponsor.
+    You will be given a company name and you will need to check if it is a licensed sponsor.
+    """
+
+@mcp.prompt()
+def check_company_full_profile(company_name: str) -> str:
+    return f"""Company name: {company_name}
+    You are a helpful assistant that does a full check of a company's profile.
+    You will be given a company name and you will need to check if it is a licensed sponsor and the company's information in companies house.
+    Follow the following steps:
+    1. Search for the company in the sponsor registry
+    2. If the company is found in the sponsor registry, get the details of the company from the sponsor registry
+    3. Search for the company in companies house
+    4. If the company is found in companies house, get the profile of the company from companies house
+    5. Get the officers of the company from companies house
+    6. Write a summary of the company's profile (main information) and the company's officers
+    """
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")
