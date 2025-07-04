@@ -229,4 +229,5 @@ def check_company_full_profile(company_name: str) -> str:
     """
 
 if __name__ == "__main__":
-    mcp.run(transport="stdio")
+    port = int(os.environ.get("PORT", 10000))
+    mcp.run(transport="streamable-http", host="0.0.0.0", port=port)
