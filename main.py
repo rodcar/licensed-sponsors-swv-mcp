@@ -14,6 +14,7 @@ load_dotenv()
 
 mcp = FastMCP("licensed-sponsor-swv-mcp")
 
+COMPANIES_HOUSE_API_KEY = os.getenv("COMPANIES_HOUSE_API_KEY", "")
 REGISTER_OF_LICENCED_SPONSORS_PAGE_URL = "https://www.gov.uk/government/publications/register-of-licensed-sponsors-workers"
 REGISTRY_LINK_CSS_SELECTOR = "div.gem-c-attachment__details > h3 > a"
 ORGANISATION_NAME_COLUMN_NAME = "Organisation Name"
@@ -69,15 +70,11 @@ def get_sponsor_details(company_name: str) -> dict:
 @mcp.tool()
 def search_in_companies_house(company_name: str) -> dict:
     """Search for companies using Companies House API"""
-    api_key = os.getenv("COMPANIES_HOUSE_API_KEY", "")
-    if not api_key:
-        return {"error": "API key required"}
-    
     try:
         response = requests.get(
             f"{COMPANIES_HOUSE_API_BASE}/search/companies",
             params={"q": company_name},
-            auth=(api_key, "")
+            auth=(COMPANIES_HOUSE_API_KEY, "")
         )
         response.raise_for_status()
         data = response.json()
@@ -89,14 +86,10 @@ def search_in_companies_house(company_name: str) -> dict:
 @mcp.tool()
 def get_company_profile_from_companies_house(company_number: str) -> dict:
     """Get company details using Companies House API"""
-    api_key = os.getenv("COMPANIES_HOUSE_API_KEY", "")
-    if not api_key:
-        return {"error": "API key required"}
-    
     try:
         response = requests.get(
             f"{COMPANIES_HOUSE_API_BASE}/company/{company_number}",
-            auth=(api_key, "")
+            auth=(COMPANIES_HOUSE_API_KEY, "")
         )
         response.raise_for_status()
         return response.json()
