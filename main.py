@@ -51,7 +51,9 @@ def get_sponsor_details(company_name: str) -> dict:
         try:
             licensed_sponsors = pd.read_csv(registry_link_href)
             best_match = process.extractOne(company_name, licensed_sponsors[ORGANISATION_NAME_COLUMN_NAME].str.lower().str.strip(), scorer=fuzz.ratio)
-            return licensed_sponsors.iloc[best_match[2]].to_dict()
+            if best_match[1] == 100:
+                return licensed_sponsors.iloc[best_match[2]].to_dict()
+            return {"error": "no perfect match found search in the sponsor registry"}
         except Exception as e:
             return {"error": f"Error reading CSV file: {e}"}
     return {"error": "No link found"}
