@@ -37,6 +37,16 @@ UK Licensed Sponsors MCP is a **Model Context Protocol (MCP) server** that provi
 
 ---
 
+## 🎬 Demo
+
+<div align="center">
+   
+https://github.com/user-attachments/assets/98fe629c-e7ca-42b3-ba92-31225796ebcb
+
+</div>
+
+---
+
 ## 🔧 Tools
 
 | Name | Input | Description |
