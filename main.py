@@ -56,25 +56,24 @@ def get_company_from_sponsors_register(company_name: str) -> dict:
     Get detailed information for a specific company from the licensed sponsors register.
     
     This function retrieves comprehensive details about a company from the UK's
-    register of licensed sponsors. It requires a perfect match (100% similarity)
-    with a company name in the register to return the company's information.
+    register of licensed sponsors. It finds all perfect matches (100% similarity)
+    and returns them as a list, since companies can have multiple entries.
     
     Args:
         company_name (str): The exact name of the company to retrieve details for.
                            The search is case-insensitive and whitespace is stripped.
     
     Returns:
-        dict: A dictionary containing all available company information from the
-              register when a perfect match is found.
+        dict: A dictionary containing 'companies' key with a list of all matching
+              company information from the register.
     """
     company_name = company_name.lower().strip()
     if register_data is None:
         return {"error": "Register data not available"}
     
-    best_match = process.extractOne(company_name, register_data[ORGANISATION_NAME_COLUMN_NAME].str.lower().str.strip(), scorer=fuzz.ratio)
-    if best_match[1] == 100:
-        return register_data.iloc[best_match[2]].to_dict()
-    return {"error": "no perfect match found search in the sponsors register"}
+    matches = process.extract(company_name, register_data[ORGANISATION_NAME_COLUMN_NAME].str.lower().str.strip(), scorer=fuzz.ratio)
+    perfect_matches = [register_data.iloc[m[2]].to_dict() for m in matches if m[1] == 100]
+    return {"companies": perfect_matches} if perfect_matches else {"error": "no perfect match found search in the sponsors register"}
 
 # See https://forum.companieshouse.gov.uk/t/status-code-401/6607/2 for more details on how to connect to Companies House API
 
