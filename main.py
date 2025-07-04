@@ -6,7 +6,7 @@ import requests
 from fastmcp import FastMCP
 from rapidfuzz import fuzz, process
 from dotenv import load_dotenv
-from cache import registry_data
+from cache import register_data
 
 # Load environment variables from .env file
 load_dotenv()
@@ -18,7 +18,7 @@ ORGANISATION_NAME_COLUMN_NAME = "Organisation Name"
 COMPANIES_HOUSE_API_BASE = "https://api.company-information.service.gov.uk"
 
 @mcp.tool()
-def search_in_sponsors_registry(company_name: str) -> dict:
+def search_in_sponsors_register(company_name: str) -> dict:
     """
     Search for companies in the UK's register of licensed sponsors.
     
@@ -35,14 +35,14 @@ def search_in_sponsors_registry(company_name: str) -> dict:
         dict: A dictionary containing the search results with keys:
               - 'search_company_name': The normalized search term used
               - 'match': Boolean indicating if a perfect match was found
-              - 'results': List of matching company names from the registry
+              - 'results': List of matching company names from the register
     """
     company_name = company_name.lower().strip()
-    if registry_data is None:
-        return {"error": "Registry data not available"}
+    if register_data is None:
+        return {"error": "Register data not available"}
     
-    matches = process.extract(company_name, registry_data[ORGANISATION_NAME_COLUMN_NAME].str.lower().str.strip(), limit=10, scorer=fuzz.ratio)
-    results = [registry_data[ORGANISATION_NAME_COLUMN_NAME].iloc[m[2]] for m in matches]
+    matches = process.extract(company_name, register_data[ORGANISATION_NAME_COLUMN_NAME].str.lower().str.strip(), limit=10, scorer=fuzz.ratio)
+    results = [register_data[ORGANISATION_NAME_COLUMN_NAME].iloc[m[2]] for m in matches]
     match = any(m[1] == 100 for m in matches)
     return {
         "search_company_name": company_name,
@@ -51,13 +51,13 @@ def search_in_sponsors_registry(company_name: str) -> dict:
     }
 
 @mcp.tool()
-def get_company_from_sponsors_registry(company_name: str) -> dict:
+def get_company_from_sponsors_register(company_name: str) -> dict:
     """
-    Get detailed information for a specific company from the licensed sponsors registry.
+    Get detailed information for a specific company from the licensed sponsors register.
     
     This function retrieves comprehensive details about a company from the UK's
     register of licensed sponsors. It requires a perfect match (100% similarity)
-    with a company name in the registry to return the company's information.
+    with a company name in the register to return the company's information.
     
     Args:
         company_name (str): The exact name of the company to retrieve details for.
@@ -65,16 +65,16 @@ def get_company_from_sponsors_registry(company_name: str) -> dict:
     
     Returns:
         dict: A dictionary containing all available company information from the
-              registry when a perfect match is found.
+              register when a perfect match is found.
     """
     company_name = company_name.lower().strip()
-    if registry_data is None:
-        return {"error": "Registry data not available"}
+    if register_data is None:
+        return {"error": "Register data not available"}
     
-    best_match = process.extractOne(company_name, registry_data[ORGANISATION_NAME_COLUMN_NAME].str.lower().str.strip(), scorer=fuzz.ratio)
+    best_match = process.extractOne(company_name, register_data[ORGANISATION_NAME_COLUMN_NAME].str.lower().str.strip(), scorer=fuzz.ratio)
     if best_match[1] == 100:
-        return registry_data.iloc[best_match[2]].to_dict()
-    return {"error": "no perfect match found search in the sponsors registry"}
+        return register_data.iloc[best_match[2]].to_dict()
+    return {"error": "no perfect match found search in the sponsors register"}
 
 # See https://forum.companieshouse.gov.uk/t/status-code-401/6607/2 for more details on how to connect to Companies House API
 
@@ -197,8 +197,8 @@ def check_company_full_profile(company_name: str) -> str:
     You are a helpful assistant that does a full check of a company's profile.
     You will be given a company name and you will need to check if it is a licensed sponsor and the company's information in companies house.
     Follow the following steps:
-    1. Search for the company in the sponsors registry
-    2. If the company is found in the sponsors registry, get the details of the company from the sponsors registry
+    1. Search for the company in the sponsors register
+    2. If the company is found in the sponsors register, get the details of the company from the sponsors register
     3. Search for the company in companies house
     4. If the company is found in companies house, get the profile of the company from companies house
     5. Get the officers of the company from companies house
