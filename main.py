@@ -84,6 +84,7 @@ def get_sponsor_details(company_name: str) -> dict:
         dict: A dictionary containing all available company information from the
               registry when a perfect match is found.
     """
+    company_name = company_name.lower().strip()
     response = requests.get(REGISTER_OF_LICENCED_SPONSORS_PAGE_URL)
     soup = BeautifulSoup(response.text, "html.parser")
     registry_link = soup.select_one(REGISTRY_LINK_CSS_SELECTOR)
