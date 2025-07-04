@@ -22,7 +22,7 @@ COMPANIES_HOUSE_API_BASE = "https://api.company-information.service.gov.uk"
 
 
 @mcp.tool()
-def search_in_sponsor_registry(company_name: str) -> List[str]:
+def search_in_sponsor_registry(company_name: str) -> dict:
     """
     Search for companies in the UK's register of licensed sponsors.
     
@@ -64,8 +64,8 @@ def search_in_sponsor_registry(company_name: str) -> List[str]:
                     "results": results
                 }
             except Exception as e:
-                return [f"Error reading CSV file: {e}"]
-    return ["No link found"]
+                return {"error": f"Error reading CSV file: {e}"}
+    return {"error": "No link found"}
 
 @mcp.tool()
 def get_sponsor_details(company_name: str) -> dict:
@@ -115,9 +115,9 @@ def search_in_companies_house(company_name: str) -> dict:
                            Companies House database.
     
     Returns:
-        list: A list of dictionaries containing company information with keys:
-              - 'title': The official company name
-              - 'company_number': The unique company registration number
+        dict: A dictionary containing the search results with keys:
+              - 'search_company_name': The search term used
+              - 'companies': List of company information dictionaries
     """
     try:
         response = requests.get(
@@ -127,8 +127,12 @@ def search_in_companies_house(company_name: str) -> dict:
         )
         response.raise_for_status()
         data = response.json()
-        return [{"title": item["title"], "company_number": item["company_number"]}
-                for item in data.get("items", [])]
+        companies = [{"title": item["title"], "company_number": item["company_number"]}
+                     for item in data.get("items", [])]
+        return {
+            "search_company_name": company_name,
+            "companies": companies
+        }
     except Exception as e:
         return {"error": str(e)}
   
