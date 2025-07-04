@@ -23,6 +23,24 @@ COMPANIES_HOUSE_API_BASE = "https://api.company-information.service.gov.uk"
 
 @mcp.tool()
 def search_in_sponsor_registry(company_name: str) -> List[str]:
+    """
+    Search for companies in the UK's register of licensed sponsors.
+    
+    This function searches the government's register of licensed sponsors for
+    companies that match the provided company name. It uses fuzzy string matching
+    to find similar company names and returns the top 10 matches with their
+    similarity scores.
+    
+    Args:
+        company_name (str): The name of the company to search for. The search
+                           is case-insensitive and whitespace is stripped.
+    
+    Returns:
+        dict: A dictionary containing the search results with keys:
+              - 'search_company_name': The normalized search term used
+              - 'match': Boolean indicating if a perfect match was found
+              - 'results': List of matching company names from the registry
+    """
     company_name = company_name.lower().strip()
     # get the registry download link from government page
     response = requests.get(REGISTER_OF_LICENCED_SPONSORS_PAGE_URL)
@@ -51,6 +69,21 @@ def search_in_sponsor_registry(company_name: str) -> List[str]:
 
 @mcp.tool()
 def get_sponsor_details(company_name: str) -> dict:
+    """
+    Get detailed information for a specific company from the licensed sponsors registry.
+    
+    This function retrieves comprehensive details about a company from the UK's
+    register of licensed sponsors. It requires a perfect match (100% similarity)
+    with a company name in the registry to return the company's information.
+    
+    Args:
+        company_name (str): The exact name of the company to retrieve details for.
+                           The search is case-insensitive and whitespace is stripped.
+    
+    Returns:
+        dict: A dictionary containing all available company information from the
+              registry when a perfect match is found.
+    """
     response = requests.get(REGISTER_OF_LICENCED_SPONSORS_PAGE_URL)
     soup = BeautifulSoup(response.text, "html.parser")
     registry_link = soup.select_one(REGISTRY_LINK_CSS_SELECTOR)
@@ -69,7 +102,22 @@ def get_sponsor_details(company_name: str) -> dict:
 
 @mcp.tool()
 def search_in_companies_house(company_name: str) -> dict:
-    """Search for companies using Companies House API"""
+    """
+    Search for companies using the Companies House API.
+    
+    This function searches the UK Companies House database for companies that
+    match the provided company name. It uses the official Companies House API
+    to perform the search and returns basic information about matching companies.
+    
+    Args:
+        company_name (str): The name of the company to search for in the
+                           Companies House database.
+    
+    Returns:
+        list: A list of dictionaries containing company information with keys:
+              - 'title': The official company name
+              - 'company_number': The unique company registration number
+    """
     try:
         response = requests.get(
             f"{COMPANIES_HOUSE_API_BASE}/search/companies",
@@ -85,7 +133,22 @@ def search_in_companies_house(company_name: str) -> dict:
   
 @mcp.tool()
 def get_company_profile_from_companies_house(company_number: str) -> dict:
-    """Get company details using Companies House API"""
+    """
+    Get detailed company profile information from Companies House.
+    
+    This function retrieves comprehensive company information from the UK
+    Companies House database using the company's unique registration number.
+    It provides detailed profile data including company status, incorporation
+    date, registered address, and other official company information.
+    
+    Args:
+        company_number (str): The unique company registration number assigned
+                             by Companies House (e.g., "12345678").
+    
+    Returns:
+        dict: A dictionary containing detailed company profile information
+              from Companies House.
+    """
     try:
         response = requests.get(
             f"{COMPANIES_HOUSE_API_BASE}/company/{company_number}",
@@ -100,7 +163,26 @@ def get_company_profile_from_companies_house(company_number: str) -> dict:
 
 @mcp.tool()
 def get_company_officers_from_companies_house(company_number: str) -> dict:
-    """Get company officers using Companies House API"""
+    """
+    Get company officers information from Companies House.
+    
+    This function retrieves information about a company's officers (directors,
+    secretaries, etc.) from the UK Companies House database. It provides details
+    about current and former officers including their roles, appointment dates,
+    and other relevant information.
+    
+    Args:
+        company_number (str): The unique company registration number assigned
+                             by Companies House (e.g., "12345678").
+    
+    Returns:
+        dict: A dictionary containing officers information with keys:
+              - 'active_count': Number of currently active officers
+              - 'officers': List of officer details including name, role, and dates
+              - 'resigned_count': Number of resigned officers
+              - 'inactive_count': Number of inactive officers
+              - 'total_results': Total number of officers found
+    """
     try:
         response = requests.get(
             f"{COMPANIES_HOUSE_API_BASE}/company/{company_number}/officers",
@@ -119,7 +201,6 @@ def get_company_officers_from_companies_house(company_number: str) -> dict:
         if response.status_code == 404:
             return {"error": "Company not found in Companies House. Check the company number."}
         return {"error": str(e)}
-    
 
 @mcp.prompt()
 def check_if_company_is_licensed_sponsor(company_name: str) -> str:
