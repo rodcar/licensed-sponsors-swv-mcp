@@ -98,5 +98,27 @@ def get_company_profile_from_companies_house(company_number: str) -> dict:
             return {"error": "Company not found in Companies House. Check the company number."}
         return {"error": str(e)}
 
+@mcp.tool()
+def get_company_officers_from_companies_house(company_number: str) -> dict:
+    """Get company officers using Companies House API"""
+    try:
+        response = requests.get(
+            f"{COMPANIES_HOUSE_API_BASE}/company/{company_number}/officers",
+            auth=(COMPANIES_HOUSE_API_KEY, "")
+        )
+        response.raise_for_status()
+        data = response.json()
+        return {
+            "active_count": data.get("active_count"),
+            "officers": [{k: officer.get(k) for k in ["name", "officer_role", "appointed_on", "is_pre_1992_appointment", "occupation"]} for officer in data.get("items", [])],
+            "resigned_count": data.get("resigned_count"),
+            "inactive_count": data.get("inactive_count"),
+            "total_results": data.get("total_results")
+        }
+    except Exception as e:
+        if response.status_code == 404:
+            return {"error": "Company not found in Companies House. Check the company number."}
+        return {"error": str(e)}
+
 if __name__ == "__main__":
     mcp.run(transport="stdio")
