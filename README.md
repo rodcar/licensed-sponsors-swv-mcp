@@ -155,7 +155,7 @@ Open MCP Inspector (URL displayed in the console) and configure the MCP client w
 | Prompt | Company Name | Conversation |
 |--------|--------------|-------------|
 | `is_company_licensed_sponsor` | 17 Capital Services Ltd | [https://claude.ai/share/f39ee0f7-f7a2-4fb7-ba52-4a91aff39c17](https://claude.ai/share/f39ee0f7-f7a2-4fb7-ba52-4a91aff39c17) |
-| `get_company_full_profile` | CVK INFOTECH LTD | [https://claude.ai/share/93dbd67e-5260-4761-ba2a-16d4d887db37](https://claude.ai/share/93dbd67e-5260-4761-ba2a-16d4d887db37) |
+| `get_company_full_profile` | CVK INFOTECH LTD | [https://claude.ai/share/05de8264-49d0-46cb-a2bd-8f8ed69647c3](https://claude.ai/share/05de8264-49d0-46cb-a2bd-8f8ed69647c3) |
 
 ---
 
