@@ -18,7 +18,7 @@ ORGANISATION_NAME_COLUMN_NAME = "Organisation Name"
 COMPANIES_HOUSE_API_BASE = "https://api.company-information.service.gov.uk"
 
 @mcp.tool()
-def search_in_sponsor_registry(company_name: str) -> dict:
+def search_in_sponsors_registry(company_name: str) -> dict:
     """
     Search for companies in the UK's register of licensed sponsors.
     
@@ -51,7 +51,7 @@ def search_in_sponsor_registry(company_name: str) -> dict:
     }
 
 @mcp.tool()
-def get_sponsor_details(company_name: str) -> dict:
+def get_company_from_sponsors_registry(company_name: str) -> dict:
     """
     Get detailed information for a specific company from the licensed sponsors registry.
     
@@ -74,7 +74,7 @@ def get_sponsor_details(company_name: str) -> dict:
     best_match = process.extractOne(company_name, registry_data[ORGANISATION_NAME_COLUMN_NAME].str.lower().str.strip(), scorer=fuzz.ratio)
     if best_match[1] == 100:
         return registry_data.iloc[best_match[2]].to_dict()
-    return {"error": "no perfect match found search in the sponsor registry"}
+    return {"error": "no perfect match found search in the sponsors registry"}
 
 # See https://forum.companieshouse.gov.uk/t/status-code-401/6607/2 for more details on how to connect to Companies House API
 
@@ -197,8 +197,8 @@ def check_company_full_profile(company_name: str) -> str:
     You are a helpful assistant that does a full check of a company's profile.
     You will be given a company name and you will need to check if it is a licensed sponsor and the company's information in companies house.
     Follow the following steps:
-    1. Search for the company in the sponsor registry
-    2. If the company is found in the sponsor registry, get the details of the company from the sponsor registry
+    1. Search for the company in the sponsors registry
+    2. If the company is found in the sponsors registry, get the details of the company from the sponsors registry
     3. Search for the company in companies house
     4. If the company is found in companies house, get the profile of the company from companies house
     5. Get the officers of the company from companies house
