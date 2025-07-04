@@ -2,12 +2,11 @@ import logging
 from typing import List
 import os
 
-import pandas as pd
 import requests
-from bs4 import BeautifulSoup
 from fastmcp import FastMCP
 from rapidfuzz import fuzz, process
 from dotenv import load_dotenv
+from cache import registry_data
 
 # Load environment variables from .env file
 load_dotenv()
@@ -15,11 +14,8 @@ load_dotenv()
 mcp = FastMCP("licensed-sponsor-swv-mcp")
 
 COMPANIES_HOUSE_API_KEY = os.getenv("COMPANIES_HOUSE_API_KEY", "")
-REGISTER_OF_LICENCED_SPONSORS_PAGE_URL = "https://www.gov.uk/government/publications/register-of-licensed-sponsors-workers"
-REGISTRY_LINK_CSS_SELECTOR = "div.gem-c-attachment__details > h3 > a"
 ORGANISATION_NAME_COLUMN_NAME = "Organisation Name"
 COMPANIES_HOUSE_API_BASE = "https://api.company-information.service.gov.uk"
-
 
 @mcp.tool()
 def search_in_sponsor_registry(company_name: str) -> dict:
@@ -42,30 +38,17 @@ def search_in_sponsor_registry(company_name: str) -> dict:
               - 'results': List of matching company names from the registry
     """
     company_name = company_name.lower().strip()
-    # get the registry download link from government page
-    response = requests.get(REGISTER_OF_LICENCED_SPONSORS_PAGE_URL)
-    soup = BeautifulSoup(response.text, "html.parser")
-    registry_link = soup.select_one(REGISTRY_LINK_CSS_SELECTOR)
-
-    if registry_link:
-        registry_link_href = registry_link.get("href")
-        if registry_link_href:
-            try:
-                logging.info(f"Reading CSV file: {registry_link_href}")
-                licensed_sponsors = pd.read_csv(registry_link_href)
-                # find the company name in the licensed_sponsors dataframe
-                matches = process.extract(company_name, licensed_sponsors[ORGANISATION_NAME_COLUMN_NAME].str.lower().str.strip(), limit=10, scorer=fuzz.ratio)
-                results = [licensed_sponsors[ORGANISATION_NAME_COLUMN_NAME].iloc[m[2]] for m in matches]
-                # check if it is a perfect match
-                match = any(m[1] == 100 for m in matches)
-                return {
-                    "search_company_name": company_name,
-                    "match": match,
-                    "results": results
-                }
-            except Exception as e:
-                return {"error": f"Error reading CSV file: {e}"}
-    return {"error": "No link found"}
+    if registry_data is None:
+        return {"error": "Registry data not available"}
+    
+    matches = process.extract(company_name, registry_data[ORGANISATION_NAME_COLUMN_NAME].str.lower().str.strip(), limit=10, scorer=fuzz.ratio)
+    results = [registry_data[ORGANISATION_NAME_COLUMN_NAME].iloc[m[2]] for m in matches]
+    match = any(m[1] == 100 for m in matches)
+    return {
+        "search_company_name": company_name,
+        "match": match,
+        "results": results
+    }
 
 @mcp.tool()
 def get_sponsor_details(company_name: str) -> dict:
@@ -85,19 +68,13 @@ def get_sponsor_details(company_name: str) -> dict:
               registry when a perfect match is found.
     """
     company_name = company_name.lower().strip()
-    response = requests.get(REGISTER_OF_LICENCED_SPONSORS_PAGE_URL)
-    soup = BeautifulSoup(response.text, "html.parser")
-    registry_link = soup.select_one(REGISTRY_LINK_CSS_SELECTOR)
-    if registry_link and (registry_link_href := registry_link.get("href")):
-        try:
-            licensed_sponsors = pd.read_csv(registry_link_href)
-            best_match = process.extractOne(company_name, licensed_sponsors[ORGANISATION_NAME_COLUMN_NAME].str.lower().str.strip(), scorer=fuzz.ratio)
-            if best_match[1] == 100:
-                return licensed_sponsors.iloc[best_match[2]].to_dict()
-            return {"error": "no perfect match found search in the sponsor registry"}
-        except Exception as e:
-            return {"error": f"Error reading CSV file: {e}"}
-    return {"error": "No link found"}
+    if registry_data is None:
+        return {"error": "Registry data not available"}
+    
+    best_match = process.extractOne(company_name, registry_data[ORGANISATION_NAME_COLUMN_NAME].str.lower().str.strip(), scorer=fuzz.ratio)
+    if best_match[1] == 100:
+        return registry_data.iloc[best_match[2]].to_dict()
+    return {"error": "no perfect match found search in the sponsor registry"}
 
 # See https://forum.companieshouse.gov.uk/t/status-code-401/6607/2 for more details on how to connect to Companies House API
 
