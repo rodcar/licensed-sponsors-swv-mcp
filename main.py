@@ -64,8 +64,10 @@ def get_sponsor_details(company_name: str) -> dict:
             return {"error": f"Error reading CSV file: {e}"}
     return {"error": "No link found"}
 
+# See https://forum.companieshouse.gov.uk/t/status-code-401/6607/2 for more details on how to connect to Companies House API
+
 @mcp.tool()
-def search_companies_house(company_name: str) -> dict:
+def search_in_companies_house(company_name: str) -> dict:
     """Search for companies using Companies House API"""
     api_key = os.getenv("COMPANIES_HOUSE_API_KEY", "")
     if not api_key:
@@ -83,19 +85,25 @@ def search_companies_house(company_name: str) -> dict:
                 for item in data.get("items", [])]
     except Exception as e:
         return {"error": str(e)}
-
-#GET https://api.company-information.service.gov.uk/search/companies
-# Example of HTTP basic authentication
-#For an API key of my_api_key, the following curl request demonstrates the setting of the Authorization HTTP request header, as defined by RFC2617:
-
-#curl -XGET -u my_api_key: https://api.company-information.service.gov.uk/company/00000006
-#GET /company/00000006 HTTP/1.1
-#Host: api.company-information.service.gov.uk
-#Authorization: Basic bXlfYXBpX2tleTo=
   
-
-
-
+@mcp.tool()
+def get_company_profile_from_companies_house(company_number: str) -> dict:
+    """Get company details using Companies House API"""
+    api_key = os.getenv("COMPANIES_HOUSE_API_KEY", "")
+    if not api_key:
+        return {"error": "API key required"}
+    
+    try:
+        response = requests.get(
+            f"{COMPANIES_HOUSE_API_BASE}/company/{company_number}",
+            auth=(api_key, "")
+        )
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        if response.status_code == 404:
+            return {"error": "Company not found in Companies House. Check the company number."}
+        return {"error": str(e)}
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")
