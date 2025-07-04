@@ -1,17 +1,23 @@
 import logging
 from typing import List
+import os
 
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from fastmcp import FastMCP
 from rapidfuzz import fuzz, process
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 mcp = FastMCP("licensed-sponsor-swv-mcp")
 
 REGISTER_OF_LICENCED_SPONSORS_PAGE_URL = "https://www.gov.uk/government/publications/register-of-licensed-sponsors-workers"
 REGISTRY_LINK_CSS_SELECTOR = "div.gem-c-attachment__details > h3 > a"
 ORGANISATION_NAME_COLUMN_NAME = "Organisation Name"
+COMPANIES_HOUSE_API_BASE = "https://api.company-information.service.gov.uk"
 
 
 @mcp.tool()
@@ -57,6 +63,39 @@ def get_sponsor_details(company_name: str) -> dict:
         except Exception as e:
             return {"error": f"Error reading CSV file: {e}"}
     return {"error": "No link found"}
+
+@mcp.tool()
+def search_companies_house(company_name: str) -> dict:
+    """Search for companies using Companies House API"""
+    api_key = os.getenv("COMPANIES_HOUSE_API_KEY", "")
+    if not api_key:
+        return {"error": "API key required"}
+    
+    try:
+        response = requests.get(
+            f"{COMPANIES_HOUSE_API_BASE}/search/companies",
+            params={"q": company_name},
+            auth=(api_key, "")
+        )
+        response.raise_for_status()
+        data = response.json()
+        return [{"title": item["title"], "company_number": item["company_number"]}
+                for item in data.get("items", [])]
+    except Exception as e:
+        return {"error": str(e)}
+
+#GET https://api.company-information.service.gov.uk/search/companies
+# Example of HTTP basic authentication
+#For an API key of my_api_key, the following curl request demonstrates the setting of the Authorization HTTP request header, as defined by RFC2617:
+
+#curl -XGET -u my_api_key: https://api.company-information.service.gov.uk/company/00000006
+#GET /company/00000006 HTTP/1.1
+#Host: api.company-information.service.gov.uk
+#Authorization: Basic bXlfYXBpX2tleTo=
+  
+
+
+
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")

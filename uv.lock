@@ -348,6 +348,7 @@ dependencies = [
     { name = "bs4" },
     { name = "fastmcp" },
     { name = "pandas" },
+    { name = "python-dotenv" },
     { name = "rapidfuzz" },
     { name = "requests" },
 ]
@@ -357,6 +358,7 @@ requires-dist = [
     { name = "bs4", specifier = ">=0.0.2" },
     { name = "fastmcp", specifier = ">=2.10.1" },
     { name = "pandas", specifier = ">=2.3.0" },
+    { name = "python-dotenv", specifier = ">=1.1.1" },
     { name = "rapidfuzz", specifier = ">=3.13.0" },
     { name = "requests", specifier = ">=2.32.4" },
 ]
