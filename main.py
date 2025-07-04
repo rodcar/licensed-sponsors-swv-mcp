@@ -15,7 +15,7 @@ ORGANISATION_NAME_COLUMN_NAME = "Organisation Name"
 
 
 @mcp.tool()
-def search(company_name: str) -> List[str]:
+def search_in_sponsor_registry(company_name: str) -> List[str]:
     company_name = company_name.lower().strip()
     # get the registry download link from government page
     response = requests.get(REGISTER_OF_LICENCED_SPONSORS_PAGE_URL)
@@ -41,6 +41,20 @@ def search(company_name: str) -> List[str]:
             except Exception as e:
                 return [f"Error reading CSV file: {e}"]
     return ["No link found"]
+
+@mcp.tool()
+def get_sponsor_details(company_name: str) -> dict:
+    response = requests.get(REGISTER_OF_LICENCED_SPONSORS_PAGE_URL)
+    soup = BeautifulSoup(response.text, "html.parser")
+    registry_link = soup.select_one(REGISTRY_LINK_CSS_SELECTOR)
+    if registry_link and (registry_link_href := registry_link.get("href")):
+        try:
+            licensed_sponsors = pd.read_csv(registry_link_href)
+            best_match = process.extractOne(company_name, licensed_sponsors[ORGANISATION_NAME_COLUMN_NAME].str.lower().str.strip(), scorer=fuzz.ratio)
+            return licensed_sponsors.iloc[best_match[2]].to_dict()
+        except Exception as e:
+            return {"error": f"Error reading CSV file: {e}"}
+    return {"error": "No link found"}
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")
