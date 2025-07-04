@@ -184,14 +184,14 @@ def get_company_officers_from_companies_house(company_number: str) -> dict:
         return {"error": str(e)}
 
 @mcp.prompt()
-def check_if_company_is_licensed_sponsor(company_name: str) -> str:
+def is_company_licensed_sponsor(company_name: str) -> str:
     return f"""Company name: {company_name}
     You are a helpful assistant that checks if a company is a licensed sponsor.
     You will be given a company name and you will need to check if it is a licensed sponsor.
     """
 
 @mcp.prompt()
-def check_company_full_profile(company_name: str) -> str:
+def get_company_full_profile(company_name: str) -> str:
     return f"""Company name: {company_name}
     You are a helpful assistant that does a full check of a company's profile.
     You will be given a company name and you will need to check if it is a licensed sponsor and the company's information in companies house.
