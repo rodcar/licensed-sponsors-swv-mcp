@@ -84,7 +84,7 @@ Add to Claude Desktop config (Claude > Settings > Developer > Edit Config):
          "command": "npx",
          "args": [
            "mcp-remote",
-           "https://uk-licensed-sponsors.onrender.com/mcp"
+           "https://uk-licensed-sponsors-mcp.onrender.com/mcp"
          ]
        }
      }
@@ -101,8 +101,8 @@ Add to Claude Desktop config (Claude > Settings > Developer > Edit Config):
 
 Clone and install:
    ```bash
-   git clone https://github.com/rodcar/uk-licensed-sponsors.git
-   cd uk-licensed-sponsors
+   git clone https://github.com/rodcar/uk-licensed-sponsors-mcp.git
+   cd uk-licensed-sponsors-mcp
    uv sync
    ```
 
@@ -113,7 +113,7 @@ Set up environment variables (optional - required for Companies House integratio
 
 Add to Claude Desktop config (Claude > Settings > Developer > Edit Config):
 
-> **Note:** Replace `/path/to/uk-licensed-sponsors` with the actual path where you cloned the repository.
+> **Note:** Replace `/path/to/uk-licensed-sponsors-mcp` with the actual path where you cloned the repository.
 
    ```json
    {
@@ -122,7 +122,7 @@ Add to Claude Desktop config (Claude > Settings > Developer > Edit Config):
          "command": "uv",
          "args": [
            "--directory",
-           "/path/to/uk-licensed-sponsors",
+           "/path/to/uk-licensed-sponsors-mcp",
            "run",
            "main.py"
          ]
@@ -139,14 +139,14 @@ Add to Claude Desktop config (Claude > Settings > Developer > Edit Config):
 
 > **Note:** Requires `npx` which comes bundled with npm. If you don't have npm installed, install [Node.js](https://nodejs.org/) which includes npm.
 
-> **Note:** Replace `/path/to/uk-licensed-sponsors` with the actual path where you cloned the repository.
+> **Note:** Replace `/path/to/uk-licensed-sponsors-mcp` with the actual path where you cloned the repository.
 
 Run:
 
 ```bash
 npx @modelcontextprotocol/inspector \
   uv \
-  --directory /path/to/uk-licensed-sponsors \                     
+  --directory /path/to/uk-licensed-sponsors-mcp \                     
   run \
   main.py
 ```
