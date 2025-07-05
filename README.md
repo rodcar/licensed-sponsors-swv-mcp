@@ -27,7 +27,6 @@
 - [💡 Examples](#-examples)
 - [🏛️ Architecture Diagram](#️-architecture-diagram)
 - [📝 License](#-license)
-- [🙏 Acknowledgments](#-acknowledgments)
 
 ---
 
